@@ -103,5 +103,16 @@ struct proc {
   struct context context;      // swtch() here to run process
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
-  char name[16];               // Process name (debugging)
+  char name[16];             // Process name (debugging)
+  uint64 start_time;     // tick when process was created
+  uint64 cpu_ticks;      // total CPU ticks consumed
+  uint64 mem_usage;      // memory pages used
+  int    exit_status;    // exit code passed to exit()
+};
+
+struct acct {
+  uint64 start_time;
+  uint64 cpu_ticks;
+  uint64 mem_usage;
+  int    exit_status;
 };

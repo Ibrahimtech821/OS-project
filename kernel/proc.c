@@ -256,6 +256,7 @@ growproc(int n)
     sz = uvmdealloc(p->pagetable, sz, sz + n);
   }
   p->sz = sz;
+  p->mem_usage = PGROUNDUP(p->sz) / PGSIZE;
   return 0;
 }
 
@@ -360,6 +361,8 @@ kexit(int status)
   
   acquire(&p->lock);
 
+  p->mem_usage = PGROUNDUP(p->sz) / PGSIZE;
+  p->exit_status = status;
   p->xstate = status;
   p->state = ZOMBIE;
 

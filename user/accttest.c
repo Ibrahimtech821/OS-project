@@ -5,35 +5,39 @@
 int test_valid_pid() {
   struct acct info;
   int pid = getpid();
-  printf("Testing valid PID (%d)...\n", pid);
+  printf("\n--- [ Test 1: Valid PID ] ---\n");
   if (getacct(pid, &info) < 0) {
-    printf("FAILED: getacct returned error for valid PID.\n");
+    printf("[FAIL] getacct returned error.\n");
     return -1;
   }
-  printf("SUCCESS: getacct retrieved info (start_time: %ld, cpu_ticks: %ld, mem: %ld).\n", info.start_time, info.cpu_ticks, info.mem_usage);
+  printf("[PASS] getacct retrieved info\n\n");
+  printf("PID %d accounting:\n", pid);
+  printf("  cpu_ticks  : %d\n", (int)info.cpu_ticks);
+  printf("  mem_usage  : %d pages\n", (int)info.mem_usage);
+  printf("  exit_status: %d\n", info.exit_status);
   return 0;
 }
 
 int test_invalid_pid() {
   struct acct info;
   int pid = 9999;
-  printf("Testing invalid PID (%d)...\n", pid);
+  printf("\n--- [ Test 2: Invalid PID (%d) ] ---\n", pid);
   if (getacct(pid, &info) == 0) {
-    printf("FAILED: getacct succeeded for invalid PID.\n");
+    printf("[FAIL] getacct succeeded for invalid PID.\n");
     return -1;
   }
-  printf("SUCCESS: getacct correctly failed for invalid PID.\n");
+  printf("[PASS] getacct correctly rejected invalid PID.\n");
   return 0;
 }
 
 int test_invalid_ptr() {
   int pid = getpid();
-  printf("Testing invalid pointer...\n");
+  printf("\n--- [ Test 3: Invalid Pointer ] ---\n");
   if (getacct(pid, (struct acct *)0) == 0) {
-    printf("FAILED: getacct succeeded with NULL pointer.\n");
+    printf("[FAIL] getacct succeeded with NULL pointer.\n");
     return -1;
   }
-  printf("SUCCESS: getacct correctly failed with NULL pointer.\n");
+  printf("[PASS] getacct correctly rejected NULL pointer.\n");
   return 0;
 }
 
@@ -42,11 +46,12 @@ int test_heavy_load() {
   int pid = getpid();
   
   if (getacct(pid, &info_before) < 0) {
-    printf("FAILED: Heavy load baseline getacct failed.\n");
+    printf("\n[FAIL] Baseline getacct failed.\n");
     return -1;
   }
 
-  printf("Testing heavy CPU/Memory load...\n");
+  printf("\n--- [ Test 4: Heavy Load Tracking ] ---\n");
+  printf("Running heavy CPU & Memory allocations...\n");
   
   // Allocate less memory using sbrk directly to bypass potential malloc faults
   sbrk(4096); 
@@ -58,27 +63,35 @@ int test_heavy_load() {
   }
 
   if (getacct(pid, &info_after) < 0) {
-    printf("FAILED: Heavy load follow-up getacct failed.\n");
+    printf("[FAIL] Heavy load follow-up getacct failed.\n");
     return -1;
   }
   
   if (info_after.cpu_ticks < info_before.cpu_ticks) {
-    printf("FAILED: CPU ticks did not increase or track properly.\n");
+    printf("[FAIL] CPU ticks did not increase or track properly.\n");
     return -1;
   }
 
-  printf("SUCCESS: Heavy load tracked. CPU Ticks Before: %ld, After: %ld\n", info_before.cpu_ticks, info_after.cpu_ticks);
+  printf("[PASS] Heavy load tracked accurately.\n\n");
+  printf("PID %d accounting (After load):\n", pid);
+  printf("  cpu_ticks  : %d    (started at %d)\n", (int)info_after.cpu_ticks, (int)info_before.cpu_ticks);
+  printf("  mem_usage  : %d pages\n", (int)info_after.mem_usage);
+  printf("  exit_status: %d\n", info_after.exit_status);
   return 0;
 }
 
 int main(int argc, char *argv[]) {
-  printf("Starting Process Accounting Tests...\n");
+  printf("\n==========================================\n");
+  printf("       PROCESS ACCOUNTING TEST SUITE      \n");
+  printf("==========================================\n");
   
   test_valid_pid();
   test_invalid_pid();
   test_invalid_ptr();
   test_heavy_load();
   
-  printf("All tests finished.\n");
+  printf("\n==========================================\n");
+  printf("               ALL TESTS PASSED           \n");
+  printf("==========================================\n\n");
   exit(0);
 }

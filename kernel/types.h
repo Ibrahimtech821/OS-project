@@ -8,3 +8,9 @@ typedef unsigned int  uint32;
 typedef unsigned long uint64;
 
 typedef uint64 pde_t;
+struct acct {
+  uint64 start_time;
+  uint64 cpu_ticks;
+  uint64 mem_usage;
+  int exit_status;
+};

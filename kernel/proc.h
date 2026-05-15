@@ -111,10 +111,3 @@ struct proc {
   int exit_status;    // exit code passed to exit()
   int accounted;
 };
-
-struct acct {
-  uint64 start_time;
-  uint64 cpu_ticks;
-  uint64 mem_usage;
-  int    exit_status;
-};

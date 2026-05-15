@@ -46,3 +46,20 @@ You will need a RISC-V "newlib" tool chain from
 https://github.com/riscv/riscv-gnu-toolchain, and qemu compiled for
 riscv64-softmmu.  Once they are installed, and in your shell
 search path, you can run "make qemu".
+
+## Process Accounting Extention
+
+This project has been modified to support **Process Accounting** (Tracking CPU time, memory usage, and exit status).
+
+### Design Decisions
+- **`getacct` System Call**: A new system call `sys_getacct` fetches the accounting statistics for a specific process ID from user-space.
+- **Tracking approach**: We dynamically measure CPU ticks and memory using a custom `struct acct` which gets updated within `sysproc.c` when a process asks for it.
+- **Retrieval mechanism**: `copyout` is utilized to safely transfer the process metrics back to the user buffer.
+
+### Integration and Testing
+To ensure the stability of process tracking, we've implemented:
+1. `accttest.c`: An isolated user-space application tracking valid scenarios, extreme/heavy load measurements, and invalid memory/pointer boundary catches returning proper fail-safes (`-1`).
+
+To test the accounting mechanism:
+1. Run `make qemu`.
+2. Inside the xv6 shell, run `accttest` out of the box and check stdout for metrics verification.

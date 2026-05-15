@@ -111,3 +111,15 @@ struct proc {
   int exit_status;    // exit code passed to exit()
   int accounted;
 };
+
+
+#define ACCT_HISTORY_SIZE 64
+
+struct acct_record {
+  int pid;
+  struct acct a;
+};
+
+extern struct acct_record acct_history[ACCT_HISTORY_SIZE];
+extern int acct_history_count;
+extern struct spinlock acct_history_lock;

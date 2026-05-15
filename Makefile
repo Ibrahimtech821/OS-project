@@ -197,6 +197,8 @@ UPROGS=\
 	$U/_dorphan\
 	$U/_add\
 	$U/_accttest\
+	$U/_acctest_2\
+	$U/_getacct\
 
 
 ifeq ($(LAB),util)

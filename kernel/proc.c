@@ -17,6 +17,7 @@ struct spinlock pid_lock;
 
 extern void forkret(void);
 static void freeproc(struct proc *p);
+static void save_acct_history(struct proc *p);
 
 extern char trampoline[]; // trampoline.S
 
@@ -26,6 +27,9 @@ extern char trampoline[]; // trampoline.S
 // must be acquired before any p->lock.
 struct spinlock wait_lock;
 
+struct acct_record acct_history[ACCT_HISTORY_SIZE];
+int acct_history_count = 0;
+struct spinlock acct_history_lock;
 // Allocate a page for each process's kernel stack.
 // Map it high in memory, followed by an invalid
 // guard page.
@@ -51,6 +55,7 @@ procinit(void)
   
   initlock(&pid_lock, "nextpid");
   initlock(&wait_lock, "wait_lock");
+  initlock(&acct_history_lock, "acct_history");
   for(p = proc; p < &proc[NPROC]; p++) {
       initlock(&p->lock, "proc");
       p->state = UNUSED;
@@ -402,6 +407,7 @@ kwait(uint64 addr)
             release(&wait_lock);
             return -1;
           }
+          save_acct_history(pp);
           freeproc(pp);
           release(&pp->lock);
           release(&wait_lock);
@@ -697,4 +703,22 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+static void
+save_acct_history(struct proc *p)
+{
+  acquire(&acct_history_lock);
+
+  int idx = acct_history_count % ACCT_HISTORY_SIZE;
+
+  acct_history[idx].pid = p->pid;
+  acct_history[idx].a.start_time = p->start_time;
+  acct_history[idx].a.cpu_ticks = p->cpu_ticks;
+  acct_history[idx].a.mem_usage = p->mem_usage;
+  acct_history[idx].a.exit_status = p->exit_status;
+
+  acct_history_count++;
+
+  release(&acct_history_lock);
 }

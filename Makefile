@@ -196,6 +196,7 @@ UPROGS=\
 	$U/_forphan\
 	$U/_dorphan\
 	$U/_add\
+	$U/_accttest\
 
 
 ifeq ($(LAB),util)

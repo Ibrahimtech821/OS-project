@@ -105,3 +105,32 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+uint64
+sys_getacct(void)
+{
+  int pid;
+  uint64 uaddr;
+  argint(0, &pid);
+  argaddr(1, &uaddr);
+  if(uaddr == 0)
+    return -1;
+  struct proc *p;
+  extern struct proc proc[];
+  for(p = proc; p < &proc[NPROC]; p++){
+    acquire(&p->lock);
+    if(p->pid == pid){
+      struct acct info;
+      info.start_time  = p->start_time;
+      info.cpu_ticks   = p->cpu_ticks;
+      info.mem_usage   = p->mem_usage;
+      info.exit_status = p->exit_status;
+      release(&p->lock);
+      if(copyout(myproc()->pagetable, uaddr,
+                 (char*)&info, sizeof(info)) < 0)
+        return -1;
+      return 0;
+    }
+    release(&p->lock);
+  }
+  return -1;
+}

@@ -56,7 +56,6 @@ int test_heavy_load() {
   // Allocate less memory using sbrk directly to bypass potential malloc faults
   sbrk(4096); 
   
-  // Do some heavy CPU computations (lowered to 1M to avoid xv6 timing out)
   volatile int counter = 0;
   for(int i = 0; i < 1000000; i++) {
     counter += i;
